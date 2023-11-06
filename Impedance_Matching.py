@@ -1,16 +1,23 @@
-# This is a sample Python script.
+# Impedance Matching with Lumped Networks
+# Wireless Communication 1 Testat
+# Author: Jeremy Allenspach
+# Date: 06.11.2023
 
-# Press Umschalt+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import cmath
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    z_In = complex(20, 0)
+    z_End = complex(50, 0)
+    z0 = 50
+    fc = 2.44e9
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    # Determine which Lumped Networks are suitable
+    if z_In.real > z_End.real:
+        print("Normal L-Section")
+    elif z_In.real < z_End.real:
+        print("Reversed L-Section")
+    else:
+        print("Short")
+
+
+
