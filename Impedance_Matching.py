@@ -11,7 +11,7 @@ import numpy as np
 load_impedance = complex(50, 10)
 source_impedance = complex(100, 50)
 Z_0 = 50
-f_c = 500e6  # Center Frequency
+center_frequency = 500e6  # Center Frequency
 
 
 def calculate_q(numerator: complex, denominator: complex):
@@ -60,19 +60,29 @@ def calculate_x2(impedance: complex, q):
     return x2_p, x2_n
 
 
+def calculate_reversed(source: complex, load: complex):
+    Q = calculate_q(load, source)
+    return
+
+def calculate_normal(source: complex, load: complex):
+    return
+
+
 if __name__ == '__main__':
-    # Determine which Lumped Networks are suitable
     if source_impedance.real > load_impedance.real:
-        print("Normal L-Section")
-        Q = calculate_q(source_impedance, load_impedance)
-        X1_1 = (source_impedance.imag + source_impedance.real * Q) / (source_impedance.real / load_impedance.real - 1)
-        X1_2 = source_impedance.real / Q
+        if abs(load_impedance.imag) >= sqrt(load_impedance.real * (source_impedance.real - load_impedance.real)):
+            # Normal and Reversed
+            calculate_normal(source_impedance, load_impedance)
+            calculate_reversed(source_impedance, load_impedance)
+        else:
+            # Only Reversed
+            calculate_normal(source_impedance, load_impedance)
     elif source_impedance.real < load_impedance.real:
-        q = calculate_q(load_impedance, source_impedance)
-        print(calculate_x1(load_impedance, source_impedance, q))
-        print(calculate_x2(source_impedance, q))
-        print("Reversed L-Section")
+        if abs(source_impedance.imag) >= sqrt(source_impedance.real * (load_impedance.real - source_impedance.real)):
+            calculate_normal(source_impedance, load_impedance)
+            calculate_reversed(source_impedance, load_impedance)
+        else:
+            calculate_reversed(source_impedance, load_impedance)
     else:
-        # X1 is infinite
-        # X2 is -(XL + XG)
-        print("Short")
+        x1 = float("inf")
+        x2 = -(load_impedance.imag + source_impedance.imag)
