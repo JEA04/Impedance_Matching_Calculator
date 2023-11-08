@@ -8,8 +8,8 @@ import numpy as np
 
 # Let's assume the Input and Output Impedance.
 # For future use in a Smith Chart Z0 will be assumed as 50 Ohms
-Z_G = complex(50, 10)
-Z_L = complex(100, 50)
+load_impedance = complex(50, 10)
+source_impedance = complex(100, 50)
 Z_0 = 50
 f_c = 500e6  # Center Frequency
 
@@ -47,8 +47,10 @@ def calculate_inductance(frequency, impedance):
 
 
 def calculate_x1(nominator_impedance: complex, denominator_impedance: complex, q):
-    x1_p = (nominator_impedance.imag + nominator_impedance.real * q) / (nominator_impedance.real / denominator_impedance.real - 1)
-    x1_n = (nominator_impedance.imag - nominator_impedance.real * q) / (nominator_impedance.real / denominator_impedance.real - 1)
+    x1_p = ((nominator_impedance.imag + nominator_impedance.real * q) /
+            (nominator_impedance.real / denominator_impedance.real - 1))
+    x1_n = ((nominator_impedance.imag - nominator_impedance.real * q) /
+            (nominator_impedance.real / denominator_impedance.real - 1))
     return x1_p, x1_n
 
 
@@ -60,15 +62,15 @@ def calculate_x2(impedance: complex, q):
 
 if __name__ == '__main__':
     # Determine which Lumped Networks are suitable
-    if Z_G.real > Z_L.real:
+    if source_impedance.real > load_impedance.real:
         print("Normal L-Section")
-        Q = calculate_q(Z_G, Z_L)
-        X1_1 = (Z_G.imag + Z_G.real * Q) / (Z_G.real / Z_L.real - 1)
-        X1_2 = Z_G.real / Q
-    elif Z_G.real < Z_L.real:
-        q = calculate_q(Z_L, Z_G)
-        print(calculate_x1(Z_L, Z_G, q))
-        print(calculate_x2(Z_G, q))
+        Q = calculate_q(source_impedance, load_impedance)
+        X1_1 = (source_impedance.imag + source_impedance.real * Q) / (source_impedance.real / load_impedance.real - 1)
+        X1_2 = source_impedance.real / Q
+    elif source_impedance.real < load_impedance.real:
+        q = calculate_q(load_impedance, source_impedance)
+        print(calculate_x1(load_impedance, source_impedance, q))
+        print(calculate_x2(source_impedance, q))
         print("Reversed L-Section")
     else:
         # X1 is infinite
