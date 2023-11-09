@@ -4,12 +4,14 @@
 # Date: 06.11.2023
 
 from math import sqrt
+
+import numpy
 import numpy as np
 
 # Let's assume the Input and Output Impedance.
 # For future use in a Smith Chart Z0 will be assumed as 50 Ohms
-load_impedance = complex(50, 10)
-source_impedance = complex(100, 50)
+load_impedance = complex(100, 50)
+source_impedance = complex(50, 10)
 Z_0 = 50
 center_frequency = 500e6  # Center Frequency
 
@@ -62,27 +64,38 @@ def calculate_x2(impedance: complex, q):
 
 def calculate_reversed(source: complex, load: complex):
     Q = calculate_q(load, source)
-    return
+    X1 = np.array(calculate_x1(load, source, Q)).reshape((2, 1))
+    X2 = np.array(calculate_x2(source, Q)).reshape((2, 1))
+    sol = np.hstack((X1, X2))
+    return sol
+
 
 def calculate_normal(source: complex, load: complex):
-    return
+    Q = calculate_q(source, load)
+    X1 = np.array(calculate_x1(source, load, Q)).reshape((2, 1))
+    X2 = np.array(calculate_x2(source, Q)).reshape((2, 1))
+    sol = np.hstack((X1, X2))
+    return sol
 
 
 if __name__ == '__main__':
     if source_impedance.real > load_impedance.real:
         if abs(load_impedance.imag) >= sqrt(load_impedance.real * (source_impedance.real - load_impedance.real)):
             # Normal and Reversed
-            calculate_normal(source_impedance, load_impedance)
-            calculate_reversed(source_impedance, load_impedance)
+            networks = calculate_normal(source_impedance, load_impedance)
+            networks = numpy.vstack((networks, calculate_reversed(source_impedance, load_impedance)))
         else:
-            # Only Reversed
-            calculate_normal(source_impedance, load_impedance)
+            # Only Normal
+            networks = calculate_normal(source_impedance, load_impedance)
     elif source_impedance.real < load_impedance.real:
         if abs(source_impedance.imag) >= sqrt(source_impedance.real * (load_impedance.real - source_impedance.real)):
-            calculate_normal(source_impedance, load_impedance)
-            calculate_reversed(source_impedance, load_impedance)
+            networks = calculate_normal(source_impedance, load_impedance)
+            networks = np.vstack((networks, calculate_reversed(source_impedance, load_impedance)))
         else:
-            calculate_reversed(source_impedance, load_impedance)
+            networks = calculate_reversed(source_impedance, load_impedance)
     else:
         x1 = float("inf")
         x2 = -(load_impedance.imag + source_impedance.imag)
+        networks = np.array([x1, x2]).reshape((2, 1))
+
+    print(networks)
