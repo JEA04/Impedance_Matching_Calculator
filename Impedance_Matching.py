@@ -26,28 +26,6 @@ def calculate_q(numerator: complex, denominator: complex):
     return sqrt(numerator.real / denominator.real - 1 + numerator.imag ** 2 / (numerator.real * denominator.real))
 
 
-def calculate_capacitance(frequency, impedance):
-    """
-
-    :param frequency:
-    :param impedance:
-    :return:
-    """
-    w = 2 * np.pi * frequency
-    return 1 / (w * impedance)
-
-
-def calculate_inductance(frequency, impedance):
-    """
-
-    :param frequency:
-    :param impedance:
-    :return:
-    """
-    w = 2 * np.pi * frequency
-    return w * impedance
-
-
 def calculate_x1(nominator_impedance: complex, denominator_impedance: complex, q):
     x1_p = ((nominator_impedance.imag + nominator_impedance.real * q) /
             (nominator_impedance.real / denominator_impedance.real - 1))
@@ -78,6 +56,28 @@ def calculate_normal(source: complex, load: complex):
     return sol
 
 
+def calculate_capacitance(frequency, impedance):
+    """
+
+    :param frequency:
+    :param impedance:
+    :return:
+    """
+    w = 2 * np.pi * frequency
+    return 1 / (w * impedance)
+
+
+def calculate_inductance(frequency, impedance):
+    """
+
+    :param frequency:
+    :param impedance:
+    :return:
+    """
+    w = 2 * np.pi * frequency
+    return impedance / w
+
+
 if __name__ == '__main__':
     if source_impedance.real > load_impedance.real:
         if abs(load_impedance.imag) >= sqrt(load_impedance.real * (source_impedance.real - load_impedance.real)):
@@ -97,5 +97,14 @@ if __name__ == '__main__':
         x1 = float("inf")
         x2 = -(load_impedance.imag + source_impedance.imag)
         networks = np.array([x1, x2]).reshape((2, 1))
+    #print(networks)
 
-    print(networks)
+    # Calculate Component Values of all Networks
+    for network in networks:
+        for value in network:
+            if value >= 0:
+                component = calculate_inductance(center_frequency, value)
+            else:
+                component = calculate_capacitance(center_frequency, value)
+            print(f"Impedance: {value: .2e} | Component: {component: .2e}")
+        print("------------------------------------------------")
