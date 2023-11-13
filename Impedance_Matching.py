@@ -6,16 +6,9 @@
 import numpy as np
 import matching
 
-# Let's assume the Input and Output Impedance.
-# For future use in a Smith Chart Z0 will be assumed as 50 Ohms
-load_impedance = complex(100, 50)
-source_impedance = complex(50, 10)
-Z_0 = 50
-center_frequency = 500e6  # Center Frequency
-
 def calculate_capacitance(frequency, impedance):
     """
-
+    TODO: Docstring for calculate_capacitance
     :param frequency:
     :param impedance:
     :return:
@@ -26,7 +19,7 @@ def calculate_capacitance(frequency, impedance):
 
 def calculate_inductance(frequency, impedance):
     """
-
+    TODO: Docstring for calculate_inductance
     :param frequency:
     :param impedance:
     :return:
@@ -52,11 +45,14 @@ if __name__ == '__main__':
         [2.44e9, complex(60, 20), complex(60, 80), 60]
     ])
 
-    load_impedance = complex(20, 0)
-    source_impedance = complex(50, 0)
+    for fc, source_impedance, load_impedance, z0 in circuits:
+        print(f"{fc}\t{source_impedance}\t{load_impedance}\t{z0}")
+        networks = matching.match_network(source_impedance, load_impedance)
 
-    networks = matching.match_network(load_impedance, source_impedance)
-    print(networks)
+
+
+    #networks = matching.match_network(load_impedance, source_impedance)
+    #print(networks)
 
     # Plot Smith Charts
 
