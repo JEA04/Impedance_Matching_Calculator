@@ -48,13 +48,13 @@ if __name__ == '__main__':
     for fc, source_impedance, load_impedance, z0 in circuits:
         print(f"{fc}\t{source_impedance}\t{load_impedance}\t{z0}")
         networks = matching.match_network(source_impedance, load_impedance)
+        print(networks)
+        print("-----------------------------------------------------------------\n")
+        # TODO: Plot Smith Charts
 
+        # TODO: Calculate Component Values (SI-Units and Prefixes!)
 
-
-    #networks = matching.match_network(load_impedance, source_impedance)
-    #print(networks)
-
-    # Plot Smith Charts
+        # TODO: If possible save everything to a PDF-File
 
     # Calculate Component Values of all Networks
     # for network in networks:
