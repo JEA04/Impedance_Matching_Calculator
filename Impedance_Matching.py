@@ -3,10 +3,8 @@
 # Author: Jeremy Allenspach
 # Date: 06.11.2023
 
-from math import sqrt
-
-import numpy
 import numpy as np
+import matching
 
 # Let's assume the Input and Output Impedance.
 # For future use in a Smith Chart Z0 will be assumed as 50 Ohms
@@ -14,47 +12,6 @@ load_impedance = complex(100, 50)
 source_impedance = complex(50, 10)
 Z_0 = 50
 center_frequency = 500e6  # Center Frequency
-
-
-def calculate_q(numerator: complex, denominator: complex):
-    """
-
-    :param numerator:
-    :param denominator:
-    :return:
-    """
-    return sqrt(numerator.real / denominator.real - 1 + numerator.imag ** 2 / (numerator.real * denominator.real))
-
-
-def calculate_x1(nominator_impedance: complex, denominator_impedance: complex, q):
-    x1_p = ((nominator_impedance.imag + nominator_impedance.real * q) /
-            (nominator_impedance.real / denominator_impedance.real - 1))
-    x1_n = ((nominator_impedance.imag - nominator_impedance.real * q) /
-            (nominator_impedance.real / denominator_impedance.real - 1))
-    return x1_p, x1_n
-
-
-def calculate_x2(impedance: complex, q):
-    x2_p = -(impedance.imag + impedance.real * q)
-    x2_n = -(impedance.imag - impedance.real * q)
-    return x2_p, x2_n
-
-
-def calculate_reversed(source: complex, load: complex):
-    Q = calculate_q(load, source)
-    X1 = np.array(calculate_x1(load, source, Q)).reshape((2, 1))
-    X2 = np.array(calculate_x2(source, Q)).reshape((2, 1))
-    sol = np.hstack((X1, X2))
-    return sol
-
-
-def calculate_normal(source: complex, load: complex):
-    Q = calculate_q(source, load)
-    X1 = np.array(calculate_x1(source, load, Q)).reshape((2, 1))
-    X2 = np.array(calculate_x2(source, Q)).reshape((2, 1))
-    sol = np.hstack((X1, X2))
-    return sol
-
 
 def calculate_capacitance(frequency, impedance):
     """
@@ -79,32 +36,36 @@ def calculate_inductance(frequency, impedance):
 
 
 if __name__ == '__main__':
-    if source_impedance.real > load_impedance.real:
-        if abs(load_impedance.imag) >= sqrt(load_impedance.real * (source_impedance.real - load_impedance.real)):
-            # Normal and Reversed
-            networks = calculate_normal(source_impedance, load_impedance)
-            networks = numpy.vstack((networks, calculate_reversed(source_impedance, load_impedance)))
-        else:
-            # Only Normal
-            networks = calculate_normal(source_impedance, load_impedance)
-    elif source_impedance.real < load_impedance.real:
-        if abs(source_impedance.imag) >= sqrt(source_impedance.real * (load_impedance.real - source_impedance.real)):
-            networks = calculate_normal(source_impedance, load_impedance)
-            networks = np.vstack((networks, calculate_reversed(source_impedance, load_impedance)))
-        else:
-            networks = calculate_reversed(source_impedance, load_impedance)
-    else:
-        x1 = float("inf")
-        x2 = -(load_impedance.imag + source_impedance.imag)
-        networks = np.array([x1, x2]).reshape((2, 1))
-    #print(networks)
+    # Define Network
+    circuits = np.array([
+        # Table 1
+        [2.44e9, complex(20, 0), complex(50, 0), 50],
+        [2.44e9, complex(20, -10), complex(60, 60), 50],
+        [2.44e9, complex(100, 75), complex(30, 0), 50],
+        # Table 2
+        [2.44e9, complex(15, 50), complex(50, 0), 30],
+        [2.44e9, complex(15, 50), complex(50, -10), 30],
+        [2.44e9, complex(30, -45), complex(45, -30), 30],
+        # Table 3
+        [2.44e9, complex(13, 60), complex(13, -60), 60],
+        [2.44e9, complex(60, -30), complex(60, 0), 60],
+        [2.44e9, complex(60, 20), complex(60, 80), 60]
+    ])
+
+    load_impedance = complex(20, 0)
+    source_impedance = complex(50, 0)
+
+    networks = matching.match_network(load_impedance, source_impedance)
+    print(networks)
+
+    # Plot Smith Charts
 
     # Calculate Component Values of all Networks
-    for network in networks:
-        for value in network:
-            if value >= 0:
-                component = calculate_inductance(center_frequency, value)
-            else:
-                component = calculate_capacitance(center_frequency, value)
-            print(f"Impedance: {value: .2e} | Component: {component: .2e}")
-        print("------------------------------------------------")
+    # for network in networks:
+    #    for value in network:
+    #        if value >= 0:
+    #            component = calculate_inductance(center_frequency, value)
+    #        else:
+    #            component = calculate_capacitance(center_frequency, value)
+    #        print(f"Impedance: {value: .2e} | Component: {component: .2e}")
+    #    print("------------------------------------------------")
