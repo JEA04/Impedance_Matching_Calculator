@@ -14,21 +14,25 @@ def match_network(source_impedance, load_impedance):
     if source_impedance.real > load_impedance.real:
         if abs(load_impedance.imag) >= sqrt(load_impedance.real * (source_impedance.real - load_impedance.real)):
             # Normal and Reversed
+            print("Normal and Reversed")
             networks = calculate_normal(source_impedance, load_impedance)
             networks = numpy.vstack((networks, calculate_reversed(source_impedance, load_impedance)))
         else:
             # Only Normal
+            print("Only Normal")
             networks = calculate_normal(source_impedance, load_impedance)
     elif source_impedance.real < load_impedance.real:
         if abs(source_impedance.imag) >= sqrt(source_impedance.real * (load_impedance.real - source_impedance.real)):
+            print("Normal and Reversed")
             networks = calculate_normal(source_impedance, load_impedance)
             networks = np.vstack((networks, calculate_reversed(source_impedance, load_impedance)))
         else:
+            print("Only Reversed")
             networks = calculate_reversed(source_impedance, load_impedance)
     else:
         x1 = float("inf")
         x2 = -(load_impedance.imag + source_impedance.imag)
-        networks = np.array([x1, x2]).reshape((2, 1))
+        networks = np.array([x1, x2])
     return networks
 
 
@@ -76,10 +80,12 @@ def calculate_reversed(source: complex, load: complex):
     :param load:
     :return:
     """
-    Q = calculate_q(load, source)
-    X1 = np.array(calculate_x1(load, source, Q)).reshape((2, 1))
-    X2 = np.array(calculate_x2(source, Q)).reshape((2, 1))
-    sol = np.hstack((X1, X2))
+    q = calculate_q(load, source)
+    x1 = np.array(calculate_x1(load, source, q)).reshape((2, 1))
+    x2 = np.array(calculate_x2(source, q)).reshape((2, 1))
+    sol = np.hstack((x1, x2))
+
+    # TODO: Calculate Component Values
     return sol
 
 
@@ -90,8 +96,32 @@ def calculate_normal(source: complex, load: complex):
     :param load:
     :return:
     """
-    Q = calculate_q(source, load)
-    X1 = np.array(calculate_x1(source, load, Q)).reshape((2, 1))
-    X2 = np.array(calculate_x2(source, Q)).reshape((2, 1))
-    sol = np.hstack((X1, X2))
+    q = calculate_q(source, load)
+    x1 = np.array(calculate_x1(source, load, q)).reshape((2, 1))
+    x2 = np.array(calculate_x2(source, q)).reshape((2, 1))
+    sol = np.hstack((x1, x2))
+
+    # TODO: Calculate Component Values
     return sol
+
+
+def calculate_capacitance(frequency, impedance):
+    """
+    TODO: Docstring for calculate_capacitance
+    :param frequency:
+    :param impedance:
+    :return:
+    """
+    w = 2 * np.pi * frequency
+    return 1 / (w * impedance)
+
+
+def calculate_inductance(frequency, impedance):
+    """
+    TODO: Docstring for calculate_inductance
+    :param frequency:
+    :param impedance:
+    :return:
+    """
+    w = 2 * np.pi * frequency
+    return impedance / w
