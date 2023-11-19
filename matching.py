@@ -4,7 +4,7 @@ import numpy
 import numpy as np
 
 
-def match_network(source_impedance, load_impedance):
+def match_network(source_impedance, load_impedance, frequency):
     """
     TODO: Docstring Comment for match_network function
     :param source_impedance:
@@ -15,24 +15,26 @@ def match_network(source_impedance, load_impedance):
         if abs(load_impedance.imag) >= sqrt(load_impedance.real * (source_impedance.real - load_impedance.real)):
             # Normal and Reversed
             print("Normal and Reversed")
-            networks = calculate_normal(source_impedance, load_impedance)
-            networks = numpy.vstack((networks, calculate_reversed(source_impedance, load_impedance)))
+            networks = calculate_normal(source_impedance, load_impedance, frequency)
+            networks = numpy.vstack((networks, calculate_reversed(source_impedance, load_impedance, frequency)))
         else:
             # Only Normal
             print("Only Normal")
-            networks = calculate_normal(source_impedance, load_impedance)
+            networks = calculate_normal(source_impedance, load_impedance, frequency)
     elif source_impedance.real < load_impedance.real:
         if abs(source_impedance.imag) >= sqrt(source_impedance.real * (load_impedance.real - source_impedance.real)):
             print("Normal and Reversed")
-            networks = calculate_normal(source_impedance, load_impedance)
-            networks = np.vstack((networks, calculate_reversed(source_impedance, load_impedance)))
+            networks = calculate_normal(source_impedance, load_impedance, frequency)
+            reversed_networks = calculate_reversed(source_impedance, load_impedance, frequency)
+            networks = np.vstack((networks, reversed_networks))
         else:
             print("Only Reversed")
-            networks = calculate_reversed(source_impedance, load_impedance)
+            networks = calculate_reversed(source_impedance, load_impedance, frequency)
     else:
         x1 = float("inf")
         x2 = -(load_impedance.imag + source_impedance.imag)
         networks = np.array([x1, x2])
+
     return networks
 
 
@@ -73,7 +75,7 @@ def calculate_x2(impedance: complex, q):
     return x2_p, x2_n
 
 
-def calculate_reversed(source: complex, load: complex):
+def calculate_reversed(source: complex, load: complex, frequency):
     """
     TODO: Docstring for calculate_reversed
     :param source:
@@ -83,13 +85,23 @@ def calculate_reversed(source: complex, load: complex):
     q = calculate_q(load, source)
     x1 = np.array(calculate_x1(load, source, q)).reshape((2, 1))
     x2 = np.array(calculate_x2(source, q)).reshape((2, 1))
-    sol = np.hstack((x1, x2))
+    solution = np.hstack((x1, x2))
+    lumped_elements = {
+        "Impedance": solution
+    }
 
-    # TODO: Calculate Component Values
-    return sol
+    # Calculate Component Values
+    values = []
+    for x1, x2 in solution:
+        xp = calculate_component_value(frequency, x1)
+        xs = calculate_component_value(frequency, x2)
+        values.append([xs, xp])
+    component_values = np.asarray(values)
+    lumped_elements.update({"Values": component_values})
+    return lumped_elements
 
 
-def calculate_normal(source: complex, load: complex):
+def calculate_normal(source: complex, load: complex, frequency):
     """
     TODO: Docstring for calculate_normal
     :param source:
@@ -99,10 +111,29 @@ def calculate_normal(source: complex, load: complex):
     q = calculate_q(source, load)
     x1 = np.array(calculate_x1(source, load, q)).reshape((2, 1))
     x2 = np.array(calculate_x2(source, q)).reshape((2, 1))
-    sol = np.hstack((x1, x2))
+    solution = np.hstack((x1, x2))
+    lumped_elements = {
+        "Impedance": solution
+    }
 
-    # TODO: Calculate Component Values
-    return sol
+    # Calculate Component Values
+    values = []
+    for x1, x2 in solution:
+        xp = calculate_component_value(frequency, x1)
+        xs = calculate_component_value(frequency, x2)
+        values.append([xp, xs])
+    component_values = np.asarray(values)
+    lumped_elements.update({"Values": component_values})
+    return lumped_elements
+
+
+def calculate_component_value(frequency, impedance):
+    if impedance > 0:
+        return calculate_inductance(frequency, impedance)
+    elif impedance < 0:
+        return calculate_capacitance(frequency, impedance)
+    else:
+        return 0
 
 
 def calculate_capacitance(frequency, impedance):

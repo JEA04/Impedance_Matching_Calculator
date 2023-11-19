@@ -26,16 +26,7 @@ if __name__ == '__main__':
 
     for fc, source_impedance, load_impedance, z0 in circuits:
         print(f"Zs: {source_impedance}\tZt: {load_impedance}")
-        networks = matching.match_network(source_impedance, load_impedance)
+        networks = matching.match_network(source_impedance, load_impedance, fc)
+        print(networks.get("Values"))
         print("-----------------------------------------------------------------\n")
         # TODO: Plot Smith Charts
-
-    # Calculate Component Values of all Networks
-    # for network in networks:
-    #    for value in network:
-    #        if value >= 0:
-    #            component = calculate_inductance(center_frequency, value)
-    #        else:
-    #            component = calculate_capacitance(center_frequency, value)
-    #        print(f"Impedance: {value: .2e} | Component: {component: .2e}")
-    #    print("------------------------------------------------")
