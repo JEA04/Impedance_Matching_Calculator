@@ -5,6 +5,7 @@
 
 import numpy as np
 import matching
+from math import log10, floor
 
 
 if __name__ == '__main__':
@@ -30,9 +31,16 @@ if __name__ == '__main__':
         # TODO: Implement SI-Prefixes
         for l_network in networks:
             if l_network == "Normal":
-                print(networks.get(l_network).get("Values"))
+                normal_networks = networks.get(l_network).get("Values")
+                for parallel, series in normal_networks:
+                    print(f"{parallel[1]}p: {parallel[0]}\t | {series[1]}s: {series[0]}")
+                    number = floor(parallel[0])
+                    print(number)
+                    print(number)
             elif l_network == "Reversed":
-                print(networks.get(l_network).get("Values"))
+                reversed_networks = networks.get(l_network).get("Values")
+                for series, parallel in reversed_networks:
+                    print(f"{series[1]}s: {series[0]}\t | {parallel[1]}p: {parallel[0]}")
             else:
                 print("Special Case")
 

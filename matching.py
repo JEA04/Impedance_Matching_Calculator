@@ -1,5 +1,4 @@
 from math import sqrt
-from units import unit
 
 import numpy
 import numpy as np
@@ -154,11 +153,11 @@ def calculate_normal(source: complex, load: complex, frequency):
 
 def calculate_component_value(frequency, impedance):
     if impedance > 0:
-        return calculate_inductance(frequency, impedance)
+        return [calculate_inductance(frequency, impedance), "L"]
     elif impedance < 0:
-        return calculate_capacitance(frequency, impedance)
+        return [calculate_capacitance(frequency, impedance), "C"]
     else:
-        return 0
+        return [0, "none"]
 
 
 def calculate_capacitance(frequency, impedance):
