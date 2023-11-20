@@ -1,12 +1,14 @@
 from math import sqrt
+from units import unit
 
 import numpy
 import numpy as np
 
 
-def match_network(source_impedance, load_impedance, frequency):
+def match_network(source_impedance: complex, load_impedance: complex, frequency):
     """
     TODO: Docstring Comment for match_network function
+    :param frequency:
     :param source_impedance:
     :param load_impedance:
     :return:
@@ -15,26 +17,49 @@ def match_network(source_impedance, load_impedance, frequency):
         if abs(load_impedance.imag) >= sqrt(load_impedance.real * (source_impedance.real - load_impedance.real)):
             # Normal and Reversed
             print("Normal and Reversed")
-            networks = calculate_normal(source_impedance, load_impedance, frequency)
-            networks = numpy.vstack((networks, calculate_reversed(source_impedance, load_impedance, frequency)))
+            networks = {
+                "Normal": calculate_normal(source_impedance, load_impedance, frequency),
+                "Reversed": calculate_reversed(source_impedance, load_impedance, frequency)
+            }
         else:
             # Only Normal
             print("Only Normal")
-            networks = calculate_normal(source_impedance, load_impedance, frequency)
+            normal = calculate_normal(source_impedance, load_impedance, frequency)
+            networks = {
+                "Normal": normal
+            }
     elif source_impedance.real < load_impedance.real:
         if abs(source_impedance.imag) >= sqrt(source_impedance.real * (load_impedance.real - source_impedance.real)):
             print("Normal and Reversed")
-            networks = calculate_normal(source_impedance, load_impedance, frequency)
-            reversed_networks = calculate_reversed(source_impedance, load_impedance, frequency)
-            networks = np.vstack((networks, reversed_networks))
+            networks = {
+                "Normal": calculate_normal(source_impedance, load_impedance, frequency),
+                "Reversed": calculate_reversed(source_impedance, load_impedance, frequency)
+            }
         else:
             print("Only Reversed")
-            networks = calculate_reversed(source_impedance, load_impedance, frequency)
+            networks = {
+                "Reversed": calculate_reversed(source_impedance, load_impedance, frequency)
+            }
     else:
-        x1 = float("inf")
-        x2 = -(load_impedance.imag + source_impedance.imag)
-        networks = np.array([x1, x2])
-
+        networks = {"None": 0.0 }
+        # TODO: Implement Special Case where only a Series Element is needed to Match the 2 Impedance's
+        # x2 = -(load_impedance.imag + source_impedance.imag)
+        # print(x2)
+        # x1 = float("inf")
+        # x2 = -(load_impedance.imag + source_impedance.imag)
+        # values = []
+        # print(x2)
+        # for x in x2:
+        #     xp = float("inf")
+        #     xs = calculate_component_value(frequency, x2)
+        #     values.append([xp, xs])
+        # lumped_elements = {
+        #     "Impedance": np.array([x1, x2]),
+        #     "Values": np.asarray(values)
+        # }
+        # networks = {
+        #     "Series": lumped_elements
+        # }
     return networks
 
 
@@ -144,7 +169,7 @@ def calculate_capacitance(frequency, impedance):
     :return:
     """
     w = 2 * np.pi * frequency
-    return 1 / (w * impedance)
+    return -(1 / (w * impedance)).real
 
 
 def calculate_inductance(frequency, impedance):
@@ -155,4 +180,4 @@ def calculate_inductance(frequency, impedance):
     :return:
     """
     w = 2 * np.pi * frequency
-    return impedance / w
+    return (impedance / w).real
