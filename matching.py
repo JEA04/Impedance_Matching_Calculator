@@ -1,6 +1,4 @@
-from math import sqrt
-
-import numpy
+from math import sqrt, floor, log10
 import numpy as np
 
 
@@ -40,7 +38,7 @@ def match_network(source_impedance: complex, load_impedance: complex, frequency)
                 "Reversed": calculate_reversed(source_impedance, load_impedance, frequency)
             }
     else:
-        networks = {"None": 0.0 }
+        networks = {"None": 0.0}
         # TODO: Implement Special Case where only a Series Element is needed to Match the 2 Impedance's
         # x2 = -(load_impedance.imag + source_impedance.imag)
         # print(x2)
@@ -64,7 +62,7 @@ def match_network(source_impedance: complex, load_impedance: complex, frequency)
 
 def calculate_q(numerator: complex, denominator: complex):
     """
-    Functions calculates the Q value which is used to calculate the two Impedances in a L-Network
+    Functions calculates the Q value which is used to calculate the two Impedance's in an L-Network
     :param numerator:
     :param denominator:
     :return:
@@ -102,6 +100,7 @@ def calculate_x2(impedance: complex, q):
 def calculate_reversed(source: complex, load: complex, frequency):
     """
     TODO: Docstring for calculate_reversed
+    :param frequency:
     :param source:
     :param load:
     :return:
@@ -128,6 +127,8 @@ def calculate_reversed(source: complex, load: complex, frequency):
 def calculate_normal(source: complex, load: complex, frequency):
     """
     TODO: Docstring for calculate_normal
+    :param frequency:
+    :return:
     :param source:
     :param load:
     :return:
@@ -153,9 +154,15 @@ def calculate_normal(source: complex, load: complex, frequency):
 
 def calculate_component_value(frequency, impedance):
     if impedance > 0:
-        return [calculate_inductance(frequency, impedance), "L"]
+        value = calculate_inductance(frequency, impedance)
+        exp = get_exponent(value)
+        unit = get_prefix(exp) + "H"
+        return [calculate_inductance(frequency, impedance), unit]
     elif impedance < 0:
-        return [calculate_capacitance(frequency, impedance), "C"]
+        value = calculate_inductance(frequency, impedance)
+        exp = get_exponent(value)
+        unit = get_prefix(exp) + "F"
+        return [calculate_capacitance(frequency, impedance), unit]
     else:
         return [0, "none"]
 
@@ -180,3 +187,44 @@ def calculate_inductance(frequency, impedance):
     """
     w = 2 * np.pi * frequency
     return (impedance / w).real
+
+
+def get_exponent(value: float):
+    """
+    Function calculates the exponent of the value
+    :param value:  preferably in scientific notation
+    :return: Only returns the exponent (5.042e-12 --> 12)
+    """
+    return floor(log10(abs(value)))
+
+
+def get_prefix(exponent: int):
+    """
+    Function takes an exponent as parameter and returns the corresponding SI-Prefix
+    :param exponent:
+    :return:    SI-Prefix (exponent = 3 --> m)
+    """
+    si = [
+        "q",  # -30
+        "r",  # -27
+        "y",  # -24
+        "z",  # -21
+        "a",  # -18
+        "f",  # -15
+        "p",  # -12
+        "n",  # -9
+        "u",  # -6
+        "m",  # -3
+        "",  # 0
+        "K",  # 3
+        "M",  # 6
+        "G",  # 9
+        "T",  # 12
+        "P",  # 15
+        "E",  # 18
+        "Z",  # 21
+        "Y",  # 24
+        "R",  # 27
+        "Q"  # 30
+    ]
+    return si[floor(exponent / 3 + 10)]

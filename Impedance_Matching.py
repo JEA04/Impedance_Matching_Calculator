@@ -33,14 +33,11 @@ if __name__ == '__main__':
             if l_network == "Normal":
                 normal_networks = networks.get(l_network).get("Values")
                 for parallel, series in normal_networks:
-                    print(f"{parallel[1]}p: {parallel[0]}\t | {series[1]}s: {series[0]}")
-                    number = floor(parallel[0])
-                    print(number)
-                    print(number)
+                    print(f"{parallel[0]} {parallel[1]}\t | {series[0]} {series[1]}")
             elif l_network == "Reversed":
                 reversed_networks = networks.get(l_network).get("Values")
                 for series, parallel in reversed_networks:
-                    print(f"{series[1]}s: {series[0]}\t | {parallel[1]}p: {parallel[0]}")
+                    print(f"{series[0]} {series[1]}\t | {parallel[0]} {parallel[1]}")
             else:
                 print("Special Case")
 
