@@ -154,15 +154,13 @@ def calculate_normal(source: complex, load: complex, frequency):
 
 def calculate_component_value(frequency, impedance):
     if impedance > 0:
-        value = calculate_inductance(frequency, impedance)
-        exp = get_exponent(value)
+        value, exp = calculate_inductance(frequency, impedance)
         unit = get_prefix(exp) + "H"
-        return [calculate_inductance(frequency, impedance), unit]
+        return [value, unit]
     elif impedance < 0:
-        value = calculate_inductance(frequency, impedance)
-        exp = get_exponent(value)
+        value, exp = calculate_capacitance(frequency, impedance)
         unit = get_prefix(exp) + "F"
-        return [calculate_capacitance(frequency, impedance), unit]
+        return [value, unit]
     else:
         return [0, "none"]
 
@@ -175,7 +173,10 @@ def calculate_capacitance(frequency, impedance):
     :return:
     """
     w = 2 * np.pi * frequency
-    return -(1 / (w * impedance)).real
+    capacitance = (1 / (w*impedance)).real
+    exponent = get_exponent(capacitance)
+    component_value = reformat_value(capacitance, exponent, 2) * (-1)
+    return component_value, exponent
 
 
 def calculate_inductance(frequency, impedance):
@@ -186,7 +187,10 @@ def calculate_inductance(frequency, impedance):
     :return:
     """
     w = 2 * np.pi * frequency
-    return (impedance / w).real
+    inductance = (impedance / w).real
+    exponent = get_exponent(inductance)
+    component_value = reformat_value(inductance, exponent, 2)
+    return component_value, exponent
 
 
 def get_exponent(value: float):
@@ -196,6 +200,17 @@ def get_exponent(value: float):
     :return: Only returns the exponent (5.042e-12 --> 12)
     """
     return floor(log10(abs(value)))
+
+
+def reformat_value(value, exponent, decimal_points: int):
+    exp = exponent - (exponent % 3)
+    if exponent > 0:
+        formatted_value = round(value / (10**exp), decimal_points)
+    elif exponent < 0:
+        formatted_value = round(value * 10**abs(exp), decimal_points)
+    else:
+        formatted_value = round(value, decimal_points)
+    return formatted_value
 
 
 def get_prefix(exponent: int):

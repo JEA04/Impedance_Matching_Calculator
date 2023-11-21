@@ -5,7 +5,6 @@
 
 import numpy as np
 import matching
-from math import log10, floor
 
 
 if __name__ == '__main__':
@@ -43,4 +42,3 @@ if __name__ == '__main__':
 
         print("-----------------------------------------------------------------\n")
         # TODO: Plot Smith Charts
-
