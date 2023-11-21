@@ -5,7 +5,7 @@
 
 import numpy as np
 import matching
-
+import schemdraw
 
 if __name__ == '__main__':
     # Define Network
@@ -27,7 +27,6 @@ if __name__ == '__main__':
     for fc, source_impedance, load_impedance, z0 in circuits:
         print(f"Zs: {source_impedance}\tZt: {load_impedance}")
         networks = matching.match_network(source_impedance, load_impedance, fc)
-        # TODO: Implement SI-Prefixes
         for l_network in networks:
             if l_network == "Normal":
                 normal_networks = networks.get(l_network).get("Values")
@@ -42,3 +41,5 @@ if __name__ == '__main__':
 
         print("-----------------------------------------------------------------\n")
         # TODO: Plot Smith Charts
+
+        # TODO: Create Circuits using Schemdraw
