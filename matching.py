@@ -37,27 +37,9 @@ def match_network(source_impedance: complex, load_impedance: complex, frequency,
                 "Reversed": calculate_reversed(source_impedance, load_impedance, frequency)
             }
     else:
-        networks = {"None": 0.0}
-        # TODO: Implement Special Case where only a Series Element is needed to Match the 2 Impedance's
-        x2 = -(load_impedance.imag + source_impedance.imag)
-        print(x2)
-        # x2 = -(load_impedance.imag + source_impedance.imag)
-        # print(x2)
-        # x1 = float("inf")
-        # x2 = -(load_impedance.imag + source_impedance.imag)
-        # values = []
-        # print(x2)
-        # for x in x2:
-        #     xp = float("inf")
-        #     xs = calculate_component_value(frequency, x2)
-        #     values.append([xp, xs])
-        # lumped_elements = {
-        #     "Impedance": np.array([x1, x2]),
-        #     "Values": np.asarray(values)
-        # }
-        # networks = {
-        #     "Series": lumped_elements
-        # }
+        networks = {
+            "Special": calculate_special_case(source_impedance, load_impedance, frequency)
+        }
     return networks
 
 
@@ -156,6 +138,15 @@ def calculate_normal(source: complex, load: complex, frequency):
     lumped_elements.update({"Values": component_values})
     return lumped_elements
 
+
+def calculate_special_case(source: complex, load: complex, frequency):
+    x2 = -(load.imag + source.imag)
+    lumped_elements = {
+        "Impedance": x2
+    }
+    xs = calculate_component_value(frequency, x2)
+    lumped_elements.update({"Values": xs})
+    return lumped_elements
 
 def calculate_component_value(frequency, impedance):
     if impedance > 0:
