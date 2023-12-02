@@ -14,8 +14,7 @@ class SmithChart(object):
         self.z0 = 50
         self.text_size = 12
         self.smith_circle = None
-        self.circle_values = [0.2, 0.5, 1, 2, 5, 10]
-        print("Smith")
+        self.normalized_values = [0.2, 0.5, 1, 2, 5, 10]
 
         # Initialize Smith Chart
         self.fig = plt.figure(figsize=(10, 10))
@@ -46,43 +45,20 @@ class SmithChart(object):
         self.ax.add_patch(line)
 
     def draw_impedance_circle(self):
-        intersect_points = self.calculate_intersect_points()
-        print(intersect_points)
-        for point in intersect_points:
-            radius = (1 - point) / 2
-            x_center = point + (1 - point) / 2
-            circle = Circle((x_center, 0.5), radius, fc='none', ec='blue')
+        for constant_real in self.normalized_values:
+            intersect = constant_real / (constant_real + 1)
+            radius = (1-intersect) / 2
+            center = intersect + radius
+            circle = Circle((center, 0.5), radius, fc='none', ec='blue')
             self.ax.add_patch(circle)
-
-        # self.z0_circle = Circle((0.75, 0.5), 0.25, fc ='none', ec = 'blue')
-        # self.ax.add_patch(self.z0_circle)
 
     def draw_admittance_circle(self):
-        intersect_points = self.calculate_intersect_points()
-        for point in reversed(intersect_points):
-            radius = point / 2.0
-            circle = Circle((radius, 0.5), radius, fc='none', ec='red')
+        for constant_real in self.normalized_values:
+            intersect = 1 - (constant_real / (constant_real + 1))
+            radius = intersect / 2
+            center = intersect - radius
+            circle = Circle((center, 0.5), radius, fc='none', ec='red')
             self.ax.add_patch(circle)
-
-    def calculate_intersect_points(self):
-        bigger = []
-        smaller = []
-        for value in self.circle_values:
-            if value > 1:
-                bigger.append(value)
-            elif value < 1:
-                smaller.append(value)
-        # Calculate intersect points for values smaller than 1
-        step = 0.5 / (len(smaller) + 1)
-        smaller_points = [i * step for i in range(1, len(smaller) + 1)]
-
-        # Calculate intersect points for values bigger than 1
-        step = 0.5 / (len(bigger) + 1)
-        bigger_points = [i * step + 0.5 for i in range(1, len(bigger) + 1)]
-        return smaller_points + [0.5] + bigger_points
-
-    def calculate_circle_intersect_points(self):
-        radius = np.pi
 
     def add_text(self):
         # Add Normalizing Impedance Text Box
@@ -108,6 +84,5 @@ class SmithChart(object):
 
 
 if __name__ == '__main__':
-    print("Hello World")
     sc = SmithChart()
     sc.show()
