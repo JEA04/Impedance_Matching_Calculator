@@ -15,6 +15,8 @@ class SmithChart(object):
         self.text_size = 12
         self.smith_circle = None
         self.normalized_values = [0.2, 0.5, 1, 2, 5, 10]
+        self.impedance_color = 'red'
+        self.admittance_color = 'blue'
 
         # Initialize Smith Chart
         self.fig = plt.figure(figsize=(10, 10))
@@ -46,30 +48,30 @@ class SmithChart(object):
 
     def draw_impedance_circle(self):
         for constant_real in self.normalized_values:
-
             # Draw Constant Real Impedance Circles
             center = (constant_real / (constant_real + 1), 0)
             radius = 1 / (constant_real + 1)
-            circle = Circle(center, radius, fc='none', ec='blue')
+            circle = Circle(center, radius, fc='none', ec=self.impedance_color)
             self.ax.add_patch(circle)
 
             # Constant imaginary Impedance Circles
             i_center = (1, 1/constant_real)
             i_center_n = (1, -1/constant_real)
             i_radius = 1/constant_real
-            circle = Circle(i_center, i_radius, fc='none', ec='red')
-            neg_const = Circle(i_center_n, i_radius, fc='none', ec='red')
+            circle = Circle(i_center, i_radius, fc='none', ec=self.impedance_color)
+            circle.set_clip_path(self.smith_circle)
+            neg_const = Circle(i_center_n, i_radius, fc='none', ec=self.impedance_color)
+            neg_const.set_clip_path(self.smith_circle)
             self.ax.add_patch(circle)
             self.ax.add_patch(neg_const)
 
     def draw_admittance_circle(self):
         for constant_real in self.normalized_values:
-
             # Draw Constant Real Admittance Circles
             center = (- (constant_real/ (constant_real + 1)), 0)
             print(center)
             radius = 1 / (constant_real + 1)
-            circle = Circle(center, radius, fc='none', ec='red')
+            circle = Circle(center, radius, fc='none', ec=self.admittance_color)
             self.ax.add_patch(circle)
 
             # Draw Constant Imaginary Admittance Circles
@@ -77,15 +79,17 @@ class SmithChart(object):
             i_center = (-1, 1 / constant_real)
             i_center_n = (-1, -1 / constant_real)
             i_radius = 1 / constant_real
-            circle = Circle(i_center, i_radius, fc='none', ec='red')
-            neg_const = Circle(i_center_n, i_radius, fc='none', ec='red')
+            circle = Circle(i_center, i_radius, fc='none', ec=self.admittance_color)
+            circle.set_clip_path(self.smith_circle)
+            neg_const = Circle(i_center_n, i_radius, fc='none', ec=self.admittance_color)
+            neg_const.set_clip_path(self.smith_circle)
             self.ax.add_patch(circle)
             self.ax.add_patch(neg_const)
 
     def add_text(self):
         # Add Normalizing Impedance Text Box
         z0_text = f"$Z_0:$ {self.z0}"
-        z0_box = Rectangle(xy=(2, 2), width=0.2, height=0.1, ec='black', fc='none')
+        z0_box = Rectangle(xy=(1, 1), width=0.2, height=0.1, ec='black', fc='none')
         self.ax.add_patch(z0_box)
         rx, ry = z0_box.get_xy()
         tx = rx + z0_box.get_width() / 2.0
