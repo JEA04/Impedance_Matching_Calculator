@@ -2,9 +2,12 @@ from math import sqrt, floor, log10
 import numpy as np
 
 
-def match_network(source_impedance: complex, load_impedance: complex, frequency):
+def match_network(source_impedance: complex, load_impedance: complex, frequency,
+                  cap_lim: (float, float), ind_lim: (float, float)):
     """
     TODO: Docstring Comment for match_network function
+    :param ind_lim:
+    :param cap_lim:
     :param frequency:
     :param source_impedance:
     :param load_impedance:
@@ -13,33 +16,31 @@ def match_network(source_impedance: complex, load_impedance: complex, frequency)
     if source_impedance.real > load_impedance.real:
         if abs(load_impedance.imag) >= sqrt(load_impedance.real * (source_impedance.real - load_impedance.real)):
             # Normal and Reversed
-            print("Normal and Reversed")
             networks = {
                 "Normal": calculate_normal(source_impedance, load_impedance, frequency),
                 "Reversed": calculate_reversed(source_impedance, load_impedance, frequency)
             }
         else:
             # Only Normal
-            print("Only Normal")
             normal = calculate_normal(source_impedance, load_impedance, frequency)
             networks = {
                 "Normal": normal
             }
     elif source_impedance.real < load_impedance.real:
         if abs(source_impedance.imag) >= sqrt(source_impedance.real * (load_impedance.real - source_impedance.real)):
-            print("Normal and Reversed")
             networks = {
                 "Normal": calculate_normal(source_impedance, load_impedance, frequency),
                 "Reversed": calculate_reversed(source_impedance, load_impedance, frequency)
             }
         else:
-            print("Only Reversed")
             networks = {
                 "Reversed": calculate_reversed(source_impedance, load_impedance, frequency)
             }
     else:
         networks = {"None": 0.0}
         # TODO: Implement Special Case where only a Series Element is needed to Match the 2 Impedance's
+        x2 = -(load_impedance.imag + source_impedance.imag)
+        print(x2)
         # x2 = -(load_impedance.imag + source_impedance.imag)
         # print(x2)
         # x1 = float("inf")
@@ -117,7 +118,9 @@ def calculate_reversed(source: complex, load: complex, frequency):
     values = []
     for x1, x2 in solution:
         xp = calculate_component_value(frequency, x1)
+        xp[0] = f"{xp[0]}p"
         xs = calculate_component_value(frequency, x2)
+        xs[0] = f"{xs[0]}s"
         values.append([xs, xp])
     component_values = np.asarray(values)
     lumped_elements.update({"Values": component_values})
@@ -135,7 +138,7 @@ def calculate_normal(source: complex, load: complex, frequency):
     """
     q = calculate_q(source, load)
     x1 = np.array(calculate_x1(source, load, q)).reshape((2, 1))
-    x2 = np.array(calculate_x2(source, q)).reshape((2, 1))
+    x2 = np.array(calculate_x2(load, q)).reshape((2, 1))
     solution = np.hstack((x1, x2))
     lumped_elements = {
         "Impedance": solution
@@ -145,7 +148,9 @@ def calculate_normal(source: complex, load: complex, frequency):
     values = []
     for x1, x2 in solution:
         xp = calculate_component_value(frequency, x1)
+        xp[0] = f"{xp[0]}p"
         xs = calculate_component_value(frequency, x2)
+        xs[0] = f"{xs[0]}s"
         values.append([xp, xs])
     component_values = np.asarray(values)
     lumped_elements.update({"Values": component_values})
@@ -156,11 +161,11 @@ def calculate_component_value(frequency, impedance):
     if impedance > 0:
         value, exp = calculate_inductance(frequency, impedance)
         unit = get_prefix(exp) + "H"
-        return [value, unit]
+        return ["L", value, unit]
     elif impedance < 0:
         value, exp = calculate_capacitance(frequency, impedance)
         unit = get_prefix(exp) + "F"
-        return [value, unit]
+        return ["C", value, unit]
     else:
         return [0, "none"]
 
@@ -173,7 +178,7 @@ def calculate_capacitance(frequency, impedance):
     :return:
     """
     w = 2 * np.pi * frequency
-    capacitance = (1 / (w*impedance)).real
+    capacitance = (1 / (w * impedance)).real
     exponent = get_exponent(capacitance)
     component_value = reformat_value(capacitance, exponent, 2) * (-1)
     return component_value, exponent
@@ -205,9 +210,9 @@ def get_exponent(value: float):
 def reformat_value(value, exponent, decimal_points: int):
     exp = exponent - (exponent % 3)
     if exponent > 0:
-        formatted_value = round(value / (10**exp), decimal_points)
+        formatted_value = round(value / (10 ** exp), decimal_points)
     elif exponent < 0:
-        formatted_value = round(value * 10**abs(exp), decimal_points)
+        formatted_value = round(value * 10 ** abs(exp), decimal_points)
     else:
         formatted_value = round(value, decimal_points)
     return formatted_value
