@@ -6,8 +6,10 @@
 import numpy as np
 import matching
 
-def createOutputString(values):
+
+def create_output_string(values):
     return f"{values[0]}: {values[1]:>6}{values[2]}"
+
 
 if __name__ == '__main__':
     # Define
@@ -37,15 +39,17 @@ if __name__ == '__main__':
                 print("Network Type: Normal")
                 normal_networks = networks.get(l_network).get("Values")
                 for parallel, series in normal_networks:
-                    print(f"{createOutputString(parallel)} | {createOutputString(series)}")
+                    print(f"{create_output_string(parallel)} | {create_output_string(series)}")
                 print()
             elif l_network == "Reversed":
                 print("Network Type: Reversed")
                 reversed_networks = networks.get(l_network).get("Values")
                 for series, parallel in reversed_networks:
-                    print(f"{createOutputString(series)} | {createOutputString(parallel)}")
+                    print(f"{create_output_string(series)} | {create_output_string(parallel)}")
             else:
                 print("Special Case")
+                network = networks.get(l_network).get("Values")
+                print(network)
 
         print("-----------------------------------------------------------------\n")
         # TODO: Plot Smith Charts
