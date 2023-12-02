@@ -5,9 +5,14 @@
 
 import numpy as np
 import matching
-import schemdraw
+
+def createOutputString(values):
+    return f"{values[0]}: {values[1]:>6}{values[2]}"
 
 if __name__ == '__main__':
+    # Define
+    cap_lim = (1.0, 1.0e-15)
+    ind_lim = (1.0, 10e-9)
     # Define Network
     circuits = np.array([
         # Table 1
@@ -19,23 +24,26 @@ if __name__ == '__main__':
         [2.44e9, complex(15, 50), complex(50, -10), 30],
         [2.44e9, complex(30, -45), complex(45, -30), 30],
         # Table 3 NOTE: Removed for now
-        # [2.44e9, complex(13, 60), complex(13, -60), 60],
-        # [2.44e9, complex(60, -30), complex(60, 0), 60],
-        # [2.44e9, complex(60, 20), complex(60, 80), 60]
+        [2.44e9, complex(13, 60), complex(13, -60), 60],
+        [2.44e9, complex(60, -30), complex(60, 0), 60],
+        [2.44e9, complex(60, 20), complex(60, 80), 60]
     ])
 
     for fc, source_impedance, load_impedance, z0 in circuits:
         print(f"Zs: {source_impedance}\tZt: {load_impedance}")
-        networks = matching.match_network(source_impedance, load_impedance, fc)
+        networks = matching.match_network(source_impedance, load_impedance, fc, cap_lim, ind_lim)
         for l_network in networks:
             if l_network == "Normal":
+                print("Network Type: Normal")
                 normal_networks = networks.get(l_network).get("Values")
                 for parallel, series in normal_networks:
-                    print(f"{parallel[0]} {parallel[1]}\t | {series[0]} {series[1]}")
+                    print(f"{createOutputString(parallel)} | {createOutputString(series)}")
+                print()
             elif l_network == "Reversed":
+                print("Network Type: Reversed")
                 reversed_networks = networks.get(l_network).get("Values")
                 for series, parallel in reversed_networks:
-                    print(f"{series[0]} {series[1]}\t | {parallel[0]} {parallel[1]}")
+                    print(f"{createOutputString(series)} | {createOutputString(parallel)}")
             else:
                 print("Special Case")
 
@@ -43,3 +51,5 @@ if __name__ == '__main__':
         # TODO: Plot Smith Charts
 
         # TODO: Create Circuits using Schemdraw
+
+        # TODO: Save Results and Circuits to PDF
