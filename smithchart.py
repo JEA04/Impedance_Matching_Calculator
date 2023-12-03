@@ -50,7 +50,7 @@ class SmithChart(object):
     def draw_curve_between_points(self, previous, current):
         inter_circle_x = []
         inter_circle_y = []
-        if previous.imag > current.imag and round(previous.real,3) != round(current.real, 3):
+        if round(previous.real,3) != round(current.real, 3):
             inter_points = np.linspace((1/previous).imag, (1/current).imag, num=50)
             for point in inter_points:
                 admittance_point = complex((1/previous).real, point)
@@ -172,9 +172,9 @@ if __name__ == '__main__':
     #     sc.plot(z_start, complex(120, 0), z_end)
     #     sc.add_component_values('Lp: 7.83nH', 'Cs: 1.09 pF')
     ax = fig.add_subplot()
-    z_start = complex(100, 75)
-    middle = complex(30, 61.5)
-    z_end = complex(30, 0)
+    z_start = complex(20, 0)
+    middle = complex(20, -24.5)
+    z_end = complex(50, 0)
     sc = SmithChart(ax)
     sc.set_z0(50)
     sc.plot(z_start, middle, z_end)
