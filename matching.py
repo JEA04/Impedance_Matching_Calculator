@@ -145,6 +145,8 @@ def calculate_special_case(source: complex, load: complex, frequency):
         "Impedance": x2
     }
     xs = calculate_component_value(frequency, x2)
+    if xs[1] != 0:
+        xs[0] = f"{xs[0]}s"
     lumped_elements.update({"Values": xs})
     return lumped_elements
 

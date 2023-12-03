@@ -6,6 +6,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from io import BytesIO
 from fpdf import FPDF
 from PIL import Image
 import matching
@@ -23,16 +24,16 @@ def add_new_subplot(index):
 
 
 def create_pdf_table(pdf, fc, source, load, z0):
-    data = [["$$f_c$$", "$$Z_{start}$$", "$$Z_{target}$$", "$$Z_0"],
-            [f"{fc.real / 10 ** 9}GHz", f"{source_impedance}Ω", f"{load_impedance}Ω", f"{z0}Ω"]]
-
+    data = [[f"fc", f"Zstart", f"Ztarget", f"Z0"],
+            [f"{fc.real / 10 ** 9}GHz", f"{source}Ω", f"{load}Ω", f"{z0}Ω"]]
     pdf.set_x(10)
-    pdf.set_y(40)
+    pdf.set_y(30)
     with pdf.table(text_align="CENTER") as table:
         for data_row in data:
             row = table.row()
             for value in data_row:
                 row.cell(value)
+
 
 if __name__ == '__main__':
     # Define
@@ -64,6 +65,7 @@ if __name__ == '__main__':
     for fc, source_impedance, load_impedance, z0 in circuits:
         subplot_index = 1
         network_num += 1
+        network_text = []
         print(f"Zs: {source_impedance}\tZt: {load_impedance}")
         networks = matching.match_network(source_impedance, load_impedance, fc, cap_lim, ind_lim)
 
@@ -75,9 +77,8 @@ if __name__ == '__main__':
         pdf.add_page()
         pdf.set_font(size=24)
         pdf.text(10, 20, text=f"Network {network_num}")
-        pdf.set_font(size=8)
+        pdf.set_font(size=12)
         create_pdf_table(pdf, fc, source_impedance, load_impedance, z0)
-
 
         for l_network in networks:
             if l_network == "Normal":
@@ -93,7 +94,9 @@ if __name__ == '__main__':
 
                     # Save to PDF
                     # Debug print to Console
-                    print(f"{create_output_string(parallel)} | {create_output_string(series)}")
+                    text = [create_output_string(parallel), create_output_string(series)]
+                    network_text.append(text)
+                    print(f"{text[0]} |  {text[0]}")
                 print()
             elif l_network == "Reversed":
                 print("Network Type: Reversed")
@@ -104,10 +107,13 @@ if __name__ == '__main__':
 
                     # Plot to Smith Chart
                     chart.plot(source_impedance,load_impedance)
+                    
 
                     # Save to PDF
                     # Debug print to Console
-                    print(f"{create_output_string(series)} | {create_output_string(parallel)}")
+                    text = [create_output_string(series), create_output_string(parallel)]
+                    network_text.append(text)
+                    print(f"{text[0]} |  {text[0]}")
             else:
                 print("Network Type: Special")
                 network = networks.get(l_network).get("Values")
@@ -119,13 +125,33 @@ if __name__ == '__main__':
 
                 # Save to PDF
                 # Debug print to Console
-                print(create_output_string(network))
+                text = create_output_string(network)
+                network_text.append(text)
+                print(text)
 
-        # fig.show()
+        # Add Results to PDF
+        pdf.set_font(size=16)
+        pdf.text(10, 60, text="Results")
+        pdf.set_font(size=10)
+        pdf.set_y(65)
+        with pdf.table(text_align="CENTER", first_row_as_headings=False) as network_table:
+            for index, data_row in enumerate(network_text):
+                row = network_table.row()
+                row.cell(f"L-Network {index + 1}")
+                length = len(data_row)
+                if len(network_text) == 1:
+                    row.cell(data_row)
+                else:
+                    for i, values in enumerate(data_row):
+                        row.cell(values)
+
+        # Add Smith Charts to PDF
         canvas = FigureCanvas(fig)
         canvas.draw()
         img = Image.fromarray(np.asarray(canvas.buffer_rgba()))
-        pdf.image(img, h=pdf.epw, w=pdf.epw)
+        pdf.set_x(0)
+        pdf.set_y(95)
+        pdf.image(img, h=pdf.epw*0.9, w=pdf.epw*0.9)
         print("-----------------------------------------------------------------\n")
 
 
