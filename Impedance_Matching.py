@@ -34,6 +34,15 @@ def create_pdf_table(pdf, fc, source, load, z0):
                 table_row.cell(value)
 
 
+def calculate_point(start, impedance, is_parallel):
+    if is_parallel:
+        start_admittance = 1/start
+        admittance = 1/impedance
+        new_point = 1/(start_admittance + admittance)
+    else:
+        new_point = start + impedance
+    return new_point
+
 if __name__ == '__main__':
     # Define
     cap_lim = (1.0, 1.0e-15)
@@ -42,8 +51,8 @@ if __name__ == '__main__':
     # Define Network
     circuits = np.array([
         # Table 1
-        [2.44e9, complex(20, 0), complex(50, 0), 50],
-        [2.44e9, complex(20, -10), complex(60, 60), 50],
+        # [2.44e9, complex(20, 0), complex(50, 0), 50],
+        # [2.44e9, complex(20, -10), complex(60, 60), 50],
         [2.44e9, complex(100, 75), complex(30, 0), 50],
         # Table 2
         [2.44e9, complex(15, 50), complex(50, 0), 30],
@@ -83,21 +92,26 @@ if __name__ == '__main__':
             if l_network == "Normal":
                 print("Network Type: Normal")
                 normal_networks = networks.get(l_network).get("Values")
-                for parallel, series in normal_networks:
+                normal_impedance = networks.get(l_network).get("Impedance")
+                for index, [parallel, series] in enumerate(normal_networks):
                     chart = add_new_subplot(subplot_index)
                     subplot_index += 1
-                    chart.plot(source_impedance, load_impedance)
+                    middle = calculate_point(source_impedance, complex(0, normal_impedance[index][0]) , True)
+                    chart.plot(source_impedance, middle, load_impedance)
+                    chart.add_component_values(parallel, series)
                     text = [create_output_string(parallel), create_output_string(series)]
                     network_text.append(text)
-                    print(f"{text[0]} |  {text[0]}")
-                print()
+                    print(f"{text[0]} |  {text[1]}")
             elif l_network == "Reversed":
                 print("Network Type: Reversed")
                 reversed_networks = networks.get(l_network).get("Values")
-                for series, parallel in reversed_networks:
+                reversed_impedance = networks.get(l_network).get("Impedance")
+                for index, [series, parallel] in enumerate(reversed_networks):
                     chart = add_new_subplot(subplot_index)
                     subplot_index += 1
-                    chart.plot(source_impedance, load_impedance)
+                    middle = calculate_point(source_impedance, complex(0, reversed_impedance[index][0]), False)
+                    chart.plot(source_impedance, middle, load_impedance)
+                    chart.add_component_values(series, parallel)
                     text = [create_output_string(series), create_output_string(parallel)]
                     network_text.append(text)
                     print(f"{text[0]} |  {text[0]}")
