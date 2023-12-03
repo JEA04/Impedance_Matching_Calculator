@@ -105,8 +105,9 @@ class SmithChart(object):
                                               fontsize=self.text_size, ha='right', va='center')
 
     def add_component_values(self, component_1, component_2):
-        text_c1 = f"[1]"
-        text_c2 = f""
+        components_text = f"[1] {component_1} \n[2] {component_2}"
+        self.ax.annotate(components_text, (-1.0, 1.0), color='black',
+                         fontsize=self.text_size, ha='left', va='center')
 
     def plot(self, *args, **kwargs):
         new_args = []
@@ -148,4 +149,5 @@ if __name__ == '__main__':
         sc = SmithChart(ax)
         sc.set_z0(60)
         sc.plot(z_start, z_end)
+        sc.add_component_values('Lp: 7.83nH', 'Cs: 1.09 pF')
     fig.show()
