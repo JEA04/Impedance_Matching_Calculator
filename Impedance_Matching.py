@@ -6,7 +6,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from io import BytesIO
 from fpdf import FPDF
 from PIL import Image
 import matching
@@ -17,8 +16,8 @@ def create_output_string(values):
     return f"{values[0]}: {values[1]:>6}{values[2]}"
 
 
-def add_new_subplot(index):
-    ax = fig.add_subplot(2, 2, index)
+def add_new_subplot(subplot_i):
+    ax = fig.add_subplot(2, 2, subplot_i)
     smith_ax = smitchart.SmithChart(ax)
     return smith_ax
 
@@ -29,10 +28,10 @@ def create_pdf_table(pdf, fc, source, load, z0):
     pdf.set_x(10)
     pdf.set_y(30)
     with pdf.table(text_align="CENTER") as table:
-        for data_row in data:
-            row = table.row()
-            for value in data_row:
-                row.cell(value)
+        for table_data in data:
+            table_row = table.row()
+            for value in table_data:
+                table_row.cell(value)
 
 
 if __name__ == '__main__':
@@ -85,15 +84,9 @@ if __name__ == '__main__':
                 print("Network Type: Normal")
                 normal_networks = networks.get(l_network).get("Values")
                 for parallel, series in normal_networks:
-                    # Create Smith Chart Plot
                     chart = add_new_subplot(subplot_index)
                     subplot_index += 1
-
-                    # Plot to Smith Chart
                     chart.plot(source_impedance, load_impedance)
-
-                    # Save to PDF
-                    # Debug print to Console
                     text = [create_output_string(parallel), create_output_string(series)]
                     network_text.append(text)
                     print(f"{text[0]} |  {text[0]}")
@@ -104,13 +97,7 @@ if __name__ == '__main__':
                 for series, parallel in reversed_networks:
                     chart = add_new_subplot(subplot_index)
                     subplot_index += 1
-
-                    # Plot to Smith Chart
-                    chart.plot(source_impedance,load_impedance)
-                    
-
-                    # Save to PDF
-                    # Debug print to Console
+                    chart.plot(source_impedance, load_impedance)
                     text = [create_output_string(series), create_output_string(parallel)]
                     network_text.append(text)
                     print(f"{text[0]} |  {text[0]}")
@@ -119,12 +106,7 @@ if __name__ == '__main__':
                 network = networks.get(l_network).get("Values")
                 chart = add_new_subplot(subplot_index)
                 subplot_index += 1
-
-                # Plot to Smith Chart
                 chart.plot(source_impedance, load_impedance)
-
-                # Save to PDF
-                # Debug print to Console
                 text = create_output_string(network)
                 network_text.append(text)
                 print(text)
@@ -144,7 +126,6 @@ if __name__ == '__main__':
                 else:
                     for i, values in enumerate(data_row):
                         row.cell(values)
-
         # Add Smith Charts to PDF
         canvas = FigureCanvas(fig)
         canvas.draw()
@@ -153,10 +134,7 @@ if __name__ == '__main__':
         pdf.set_y(95)
         pdf.image(img, h=pdf.epw*0.9, w=pdf.epw*0.9)
         print("-----------------------------------------------------------------\n")
-
-
         # TODO: Create Circuits using Schemdraw
-
         # TODO: Save Results and Smith Charts to PDF
 
     pdf.output("report.pdf")
