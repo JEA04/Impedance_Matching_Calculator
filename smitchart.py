@@ -13,7 +13,7 @@ class SmithChart(object):
         # Class Parameters
         self.ax = ax
         self.z0 = 50
-        self.text_size = 12
+        self.text_size = 10
         self.smith_circle = None
         self.normalized_values = [0.2, 0.5, 1, 2, 5, 10]
         self.impedance_color = 'red'
@@ -25,7 +25,7 @@ class SmithChart(object):
 
         # Initialize Smith Chart
         self.ax.axis('off')
-        self.ax.axis(np.array([-1, 1, -1, 1]))
+        self.ax.axis(np.array([-1.1, 1.1, -1.1, 1.1]))
         self.draw_smith_chart()
 
     def draw_smith_chart(self):
@@ -86,22 +86,23 @@ class SmithChart(object):
 
     def set_z0_text(self):
         z0_text = f"$Z_0:$ {self.z0}"
-        z0_box = Rectangle(xy=(0.75, 0.8), width=0.2, height=0.1, ec='black', fc='none')
+        z0_box = Rectangle(xy=(0.6, 0.9), width=0.4, height=0.15, ec='black', fc='none',)
         self.ax.add_patch(z0_box)
         rx, ry = z0_box.get_xy()
         tx = rx + z0_box.get_width() / 2.0
         ty = ry + z0_box.get_height() / 2.0
-        self.z0_text = self.ax.annotate(z0_text, (tx, ty), color='black', fontsize=self.text_size, ha='center', va='center')
+        self.z0_text = self.ax.annotate(z0_text, (tx, ty), color='black',
+                                        fontsize=self.text_size, ha='center', va='center')
 
     def add_start_impedance_text(self, value):
-        start_impedance = complex(120)
-        start = f"$Z_{{start}}:${start_impedance}Ω"
-        self.z_start_text =  self.ax.annotate(start, (-1, -0.9), color='red', fontsize=self.text_size)
+        start = f"$Z_{{start}}:${value}Ω"
+        self.z_start_text =  self.ax.annotate(start, (-1.0, -1.0), color='red',
+                                              fontsize=self.text_size, ha='left', va='center')
 
     def add_target_impedance_text(self, value):
-        target_impedance = complex(60, 0)
-        target = f"$Z_{{target}}:${target_impedance}Ω"
-        self.z_target_text = self.ax.annotate(target, (0.75, -0.9), color='green', fontsize=self.text_size)
+        target = f"$Z_{{target}}:${value}Ω"
+        self.z_target_text = self.ax.annotate(target, (1, -1.0), color='green',
+                                              fontsize=self.text_size, ha='right', va='center')
 
     def plot(self, *args, **kwargs):
         new_args = []
@@ -131,15 +132,16 @@ class SmithChart(object):
     def set_z0(self, value):
         if value > 0:
             self.z0 = value
-            self.z0_text.set_text(f"Z0={value}Ω")
+            self.z0_text.set_text(f"$Z_0$={value}Ω")
 
 
 if __name__ == '__main__':
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot()
-    z_start = complex(120, 0)
-    z_end = complex(60, 0)
-    sc = SmithChart(ax)
-    sc.set_z0(60)
-    sc.plot(z_start, z_end)
+    fig = plt.figure(figsize=(12, 12))
+    for i in range(1, 4):
+        ax = fig.add_subplot(2, 2, i)
+        z_start = complex(100, 75)
+        z_end = complex(60, 80)
+        sc = SmithChart(ax)
+        sc.set_z0(60)
+        sc.plot(z_start, z_end)
     fig.show()
