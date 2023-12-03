@@ -19,6 +19,9 @@ class SmithChart(object):
         self.impedance_color = 'red'
         self.admittance_color = 'blue'
         self.line_style = ':'
+        self.z0_text = None
+        self.z_start_text = None
+        self.z_target_text = None
 
         # Initialize Smith Chart
         self.ax.axis('off')
@@ -65,7 +68,6 @@ class SmithChart(object):
         for constant_real in self.normalized_values:
             # Draw Constant Real Admittance Circles
             center = (- (constant_real / (constant_real + 1)), 0)
-            print(center)
             radius = 1 / (constant_real + 1)
             circle = Circle(center, radius, fc='none', ec=self.admittance_color, ls=self.line_style)
             self.ax.add_patch(circle)
@@ -89,21 +91,36 @@ class SmithChart(object):
         rx, ry = z0_box.get_xy()
         tx = rx + z0_box.get_width() / 2.0
         ty = ry + z0_box.get_height() / 2.0
-        self.ax.annotate(z0_text, (tx, ty), color='black', fontsize=self.text_size, ha='center', va='center')
+        self.z0_text = self.ax.annotate(z0_text, (tx, ty), color='black', fontsize=self.text_size, ha='center', va='center')
 
     def add_start_impedance_text(self, value):
         start_impedance = complex(120)
         start = f"$Z_{{start}}:${start_impedance}Ω"
-        self.ax.annotate(start, (-1, -0.9), color='red', fontsize=self.text_size)
+        self.z_start_text =  self.ax.annotate(start, (-1, -0.9), color='red', fontsize=self.text_size)
 
     def add_target_impedance_text(self, value):
         target_impedance = complex(60, 0)
         target = f"$Z_{{target}}:${target_impedance}Ω"
-        self.ax.annotate(target, (0.75, -0.9), color='green', fontsize=self.text_size)
+        self.z_target_text = self.ax.annotate(target, (0.75, -0.9), color='green', fontsize=self.text_size)
 
-    def plot(self, impedance):
-        gamma = self.impedance_to_gamma(impedance)
-        self.ax.plot(gamma.real, gamma.imag, 'o', color="green")
+    def plot(self, *args, **kwargs):
+        new_args = []
+        for arg in args:
+            xy = self.impedance_to_gamma(arg)
+            new_args.append([xy.real, xy.imag])
+
+        for index, [real, imag] in enumerate(new_args):
+            if index == 0:
+                self.ax.plot(real, imag, 'x', color='red')
+                self.add_start_impedance_text(args[index])
+            elif index == len(new_args) - 1:
+                self.ax.plot(real, imag, 'o', color='green')
+                self.add_target_impedance_text(args[index])
+            else:
+                # TODO: Interpolate between points
+                print("Else")
+
+        #self.ax.plot(gamma.real, gamma.imag, 'o', color="green")
 
     def impedance_to_gamma(self, impedance):
         return complex(impedance - self.z0) / (impedance + self.z0)
@@ -114,15 +131,15 @@ class SmithChart(object):
     def set_z0(self, value):
         if value > 0:
             self.z0 = value
+            self.z0_text.set_text(f"Z0={value}Ω")
 
 
 if __name__ == '__main__':
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot()
+    z_start = complex(120, 0)
+    z_end = complex(60, 0)
     sc = SmithChart(ax)
     sc.set_z0(60)
-    z_target = complex(60)
-    z_start = complex(60, -30)
-    sc.plot(z_target)
-    sc.plot(z_start)
+    sc.plot(z_start, z_end)
     fig.show()
