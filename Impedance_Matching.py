@@ -12,6 +12,10 @@ import smitchart
 def create_output_string(values):
     return f"{values[0]}: {values[1]:>6}{values[2]}"
 
+def add_new_subplot(index):
+    ax = fig.add_subplot(2, 2, index)
+    smith_ax = smitchart.SmithChart(ax)
+    return smith_ax
 
 if __name__ == '__main__':
     # Define
@@ -34,26 +38,48 @@ if __name__ == '__main__':
     ])
 
     for fc, source_impedance, load_impedance, z0 in circuits:
+        subplot_index = 1
         print(f"Zs: {source_impedance}\tZt: {load_impedance}")
         networks = matching.match_network(source_impedance, load_impedance, fc, cap_lim, ind_lim)
         fig = plt.figure(figsize=(10, 10))
+        fig.tight_layout()
         for l_network in networks:
             if l_network == "Normal":
                 print("Network Type: Normal")
                 normal_networks = networks.get(l_network).get("Values")
                 for parallel, series in normal_networks:
-                    ax = fig.add_subplot()
-                    chart = smitchart.SmithChart(ax)
+                    # Create Smith Chart Plot
+                    chart = add_new_subplot(subplot_index)
+                    subplot_index += 1
+
+                    # Plot to Smith Chart
+
+                    # Save to PDF
+                    # Debug print to Console
                     print(f"{create_output_string(parallel)} | {create_output_string(series)}")
                 print()
             elif l_network == "Reversed":
                 print("Network Type: Reversed")
                 reversed_networks = networks.get(l_network).get("Values")
                 for series, parallel in reversed_networks:
+                    chart = add_new_subplot(subplot_index)
+                    subplot_index += 1
+
+                    # Plot to Smith Chart
+
+                    # Save to PDF
+                    # Debug print to Console
                     print(f"{create_output_string(series)} | {create_output_string(parallel)}")
             else:
                 print("Special Case")
                 network = networks.get(l_network).get("Values")
+                chart = add_new_subplot(subplot_index)
+                subplot_index += 1
+
+                # Plot to Smith Chart
+
+                # Save to PDF
+                # Debug print to Console
                 print(network)
         fig.show()
         print("-----------------------------------------------------------------\n")
