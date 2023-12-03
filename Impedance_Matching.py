@@ -4,7 +4,9 @@
 # Date: 06.11.2023
 
 import numpy as np
+import matplotlib.pyplot as plt
 import matching
+import smitchart
 
 
 def create_output_string(values):
@@ -25,7 +27,7 @@ if __name__ == '__main__':
         [2.44e9, complex(15, 50), complex(50, 0), 30],
         [2.44e9, complex(15, 50), complex(50, -10), 30],
         [2.44e9, complex(30, -45), complex(45, -30), 30],
-        # Table 3 NOTE: Removed for now
+        # Table 3
         [2.44e9, complex(13, 60), complex(13, -60), 60],
         [2.44e9, complex(60, -30), complex(60, 0), 60],
         [2.44e9, complex(60, 20), complex(60, 80), 60]
@@ -34,11 +36,14 @@ if __name__ == '__main__':
     for fc, source_impedance, load_impedance, z0 in circuits:
         print(f"Zs: {source_impedance}\tZt: {load_impedance}")
         networks = matching.match_network(source_impedance, load_impedance, fc, cap_lim, ind_lim)
+        fig = plt.figure(figsize=(10, 10))
         for l_network in networks:
             if l_network == "Normal":
                 print("Network Type: Normal")
                 normal_networks = networks.get(l_network).get("Values")
                 for parallel, series in normal_networks:
+                    ax = fig.add_subplot()
+                    chart = smitchart.SmithChart(ax)
                     print(f"{create_output_string(parallel)} | {create_output_string(series)}")
                 print()
             elif l_network == "Reversed":
@@ -50,10 +55,10 @@ if __name__ == '__main__':
                 print("Special Case")
                 network = networks.get(l_network).get("Values")
                 print(network)
-
+        fig.show()
         print("-----------------------------------------------------------------\n")
         # TODO: Plot Smith Charts
 
         # TODO: Create Circuits using Schemdraw
 
-        # TODO: Save Results and Circuits to PDF
+        # TODO: Save Results and Smith Charts to PDF
