@@ -158,7 +158,7 @@ def calculate_component_value(frequency, impedance):
         unit = get_prefix(exp) + "F"
         return ["C", value, unit]
     else:
-        return [0, "none"]
+        return ["",0, ""]
 
 
 def calculate_capacitance(frequency, impedance):

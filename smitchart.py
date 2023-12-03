@@ -96,13 +96,17 @@ class SmithChart(object):
 
     def add_start_impedance_text(self, value):
         start = f"$Z_{{start}}:${value}Ω"
-        self.z_start_text =  self.ax.annotate(start, (-1.0, -1.0), color='red',
+        self.z_start_text =  self.ax.annotate(start, (-1.0, -1.1), color='red',
                                               fontsize=self.text_size, ha='left', va='center')
 
     def add_target_impedance_text(self, value):
         target = f"$Z_{{target}}:${value}Ω"
-        self.z_target_text = self.ax.annotate(target, (1, -1.0), color='green',
+        self.z_target_text = self.ax.annotate(target, (1, -1.1), color='green',
                                               fontsize=self.text_size, ha='right', va='center')
+
+    def add_component_values(self, component_1, component_2):
+        text_c1 = f"[1]"
+        text_c2 = f""
 
     def plot(self, *args, **kwargs):
         new_args = []
