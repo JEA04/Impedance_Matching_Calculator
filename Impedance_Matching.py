@@ -9,7 +9,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from fpdf import FPDF
 from PIL import Image
 import matching
-import smitchart
+import smithchart
 
 
 def create_output_string(values):
@@ -43,6 +43,7 @@ def calculate_point(start, impedance, is_parallel):
         new_point = start + impedance
     return new_point
 
+
 if __name__ == '__main__':
     # Define
     cap_lim = (1.0, 1.0e-15)
@@ -51,8 +52,8 @@ if __name__ == '__main__':
     # Define Network
     circuits = np.array([
         # Table 1
-        # [2.44e9, complex(20, 0), complex(50, 0), 50],
-        # [2.44e9, complex(20, -10), complex(60, 60), 50],
+        [2.44e9, complex(20, 0), complex(50, 0), 50],
+        [2.44e9, complex(20, -10), complex(60, 60), 50],
         [2.44e9, complex(100, 75), complex(30, 0), 50],
         # Table 2
         [2.44e9, complex(15, 50), complex(50, 0), 30],
@@ -96,7 +97,7 @@ if __name__ == '__main__':
                 for index, [parallel, series] in enumerate(normal_networks):
                     chart = add_new_subplot(subplot_index)
                     subplot_index += 1
-                    middle = calculate_point(source_impedance, complex(0, normal_impedance[index][0]) , True)
+                    middle = calculate_point(source_impedance, complex(0, normal_impedance[index][0]), True)
                     chart.plot(source_impedance, middle, load_impedance)
                     chart.add_component_values(parallel, series)
                     text = [create_output_string(parallel), create_output_string(series)]
@@ -109,7 +110,7 @@ if __name__ == '__main__':
                 for index, [series, parallel] in enumerate(reversed_networks):
                     chart = add_new_subplot(subplot_index)
                     subplot_index += 1
-                    middle = calculate_point(source_impedance, complex(0, reversed_impedance[index][0]), False)
+                    middle = calculate_point(source_impedance, complex(0, reversed_impedance[index][1]), False)
                     chart.plot(source_impedance, middle, load_impedance)
                     chart.add_component_values(series, parallel)
                     text = [create_output_string(series), create_output_string(parallel)]
