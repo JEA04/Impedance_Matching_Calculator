@@ -18,7 +18,7 @@ def create_output_string(values):
 
 def add_new_subplot(subplot_i):
     ax = fig.add_subplot(2, 2, subplot_i)
-    smith_ax = smitchart.SmithChart(ax)
+    smith_ax = smithchart.SmithChart(ax)
     return smith_ax
 
 

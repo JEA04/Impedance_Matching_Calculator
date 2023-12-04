@@ -1,4 +1,5 @@
 from math import sqrt, floor, log10
+from decimal import Decimal
 import numpy as np
 
 
@@ -147,8 +148,12 @@ def calculate_special_case(source: complex, load: complex, frequency):
     xs = calculate_component_value(frequency, x2)
     if xs[1] != 0:
         xs[0] = f"{xs[0]}s"
+    else:
+        xs[0] = ""
+        xs[1] = "short"
     lumped_elements.update({"Values": xs})
     return lumped_elements
+
 
 def calculate_component_value(frequency, impedance):
     if impedance > 0:
@@ -173,7 +178,7 @@ def calculate_capacitance(frequency, impedance):
     w = 2 * np.pi * frequency
     capacitance = (1 / (w * impedance)).real
     exponent = get_exponent(capacitance)
-    component_value = reformat_value(capacitance, exponent, 2) * (-1)
+    component_value = reformat_value(capacitance, exponent) * (-1)
     return component_value, exponent
 
 
@@ -187,7 +192,7 @@ def calculate_inductance(frequency, impedance):
     w = 2 * np.pi * frequency
     inductance = (impedance / w).real
     exponent = get_exponent(inductance)
-    component_value = reformat_value(inductance, exponent, 2)
+    component_value = reformat_value(inductance, exponent)
     return component_value, exponent
 
 
@@ -200,7 +205,8 @@ def get_exponent(value: float):
     return floor(log10(abs(value)))
 
 
-def reformat_value(value, exponent, decimal_points: int):
+def reformat_value(value, exponent,):
+    decimal_points = 2 - exponent % 3
     exp = exponent - (exponent % 3)
     if exponent > 0:
         formatted_value = round(value / (10 ** exp), decimal_points)
@@ -208,6 +214,8 @@ def reformat_value(value, exponent, decimal_points: int):
         formatted_value = round(value * 10 ** abs(exp), decimal_points)
     else:
         formatted_value = round(value, decimal_points)
+    if decimal_points == 0:
+        formatted_value = int(formatted_value)
     return formatted_value
 
 
