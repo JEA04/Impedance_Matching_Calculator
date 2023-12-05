@@ -16,9 +16,9 @@ def create_output_string(values):
     return f"{values[0]}: {values[1]:>6}{values[2]}"
 
 
-def add_new_subplot(subplot_i):
+def add_new_subplot(subplot_i, normalizing_impedance):
     ax = fig.add_subplot(2, 2, subplot_i)
-    smith_ax = smithchart.SmithChart(ax)
+    smith_ax = smithchart.SmithChart(ax, normalizing_impedance)
     return smith_ax
 
 
@@ -71,10 +71,11 @@ if __name__ == '__main__':
     pdf.add_font("roboto", style="B", fname="font/Roboto-Bold.ttf")
     pdf.set_font("roboto", "", 12)
 
-    for fc, source_impedance, load_impedance, z0 in circuits:
+    for fc, source_impedance, load_impedance, normalising_impedance in circuits:
         subplot_index = 1
         network_num += 1
         network_text = []
+        z0 = int(normalising_impedance.real)
         print(f"Zs: {source_impedance}\tZt: {load_impedance}")
         networks = matching.match_network(source_impedance, load_impedance, fc, cap_lim, ind_lim)
 
@@ -95,7 +96,7 @@ if __name__ == '__main__':
                 normal_networks = networks.get(l_network).get("Values")
                 normal_impedance = networks.get(l_network).get("Impedance")
                 for index, [parallel, series] in enumerate(normal_networks):
-                    chart = add_new_subplot(subplot_index)
+                    chart = add_new_subplot(subplot_index, z0)
                     subplot_index += 1
                     middle = calculate_point(source_impedance, complex(0, normal_impedance[index][0]), True)
                     chart.plot(source_impedance, middle, load_impedance)
@@ -108,7 +109,7 @@ if __name__ == '__main__':
                 reversed_networks = networks.get(l_network).get("Values")
                 reversed_impedance = networks.get(l_network).get("Impedance")
                 for index, [series, parallel] in enumerate(reversed_networks):
-                    chart = add_new_subplot(subplot_index)
+                    chart = add_new_subplot(subplot_index, z0)
                     subplot_index += 1
                     middle = calculate_point(source_impedance, complex(0, reversed_impedance[index][1]), False)
                     chart.plot(source_impedance, middle, load_impedance)
@@ -119,7 +120,7 @@ if __name__ == '__main__':
             else:
                 print("Network Type: Special")
                 network = networks.get(l_network).get("Values")
-                chart = add_new_subplot(subplot_index)
+                chart = add_new_subplot(subplot_index, z0)
                 subplot_index += 1
                 chart.plot(source_impedance, load_impedance)
                 text = create_output_string(network)
