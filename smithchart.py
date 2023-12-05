@@ -1,5 +1,4 @@
 from typing import Any
-
 import matplotlib.pyplot as plt
 import numpy
 import numpy as np
@@ -8,10 +7,10 @@ from matplotlib.patches import Circle, FancyArrowPatch, Rectangle
 
 class SmithChart(object):
 
-    def __init__(self, ax):
+    def __init__(self, ax, z0=50):
         # Class Parameters
         self.ax = ax
-        self.z0 = 50
+        self.z0 = z0
         self.text_size = 10
         self.smith_circle = None
         self.normalized_values = [0.2, 0.5, 1, 2, 5, 10]
@@ -124,13 +123,13 @@ class SmithChart(object):
             self.ax.add_patch(neg_const)
 
     def set_z0_text(self):
-        z0_text = f"$Z_0:$ {self.z0}"
+        text = f"$Z_0:$ {self.z0}"
         z0_box = Rectangle(xy=(0.6, 0.9), width=0.4, height=0.15, ec='black', fc='none',)
         self.ax.add_patch(z0_box)
         rx, ry = z0_box.get_xy()
         tx = rx + z0_box.get_width() / 2.0
         ty = ry + z0_box.get_height() / 2.0
-        self.z0_text = self.ax.annotate(z0_text, (tx, ty), color='black',
+        self.z0_text = self.ax.annotate(text, (tx, ty), color='black',
                                         fontsize=self.text_size, ha='center', va='center')
 
     def add_start_impedance_text(self, value):
@@ -155,11 +154,6 @@ class SmithChart(object):
         y0 = 1/self.z0
         return complex(-(admittance - y0)/(admittance + y0))
 
-    def set_z0(self, value):
-        if value > 0:
-            self.z0 = value
-            self.z0_text.set_text(f"$Z_0$={value}Ω")
-
 
 if __name__ == '__main__':
     fig = plt.figure(figsize=(10, 10))
@@ -175,8 +169,7 @@ if __name__ == '__main__':
     z_start = complex(20, 0)
     middle = complex(20, -24.5)
     z_end = complex(50, 0)
-    sc = SmithChart(ax)
-    sc.set_z0(50)
+    sc = SmithChart(ax, 50)
     sc.plot(z_start, middle, z_end)
     fig.show()
 
