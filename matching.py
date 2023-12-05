@@ -5,13 +5,13 @@ import numpy as np
 def match_network(source_impedance: complex, load_impedance: complex, frequency,
                   cap_lim: (float, float), ind_lim: (float, float)):
     """
-    TODO: Docstring Comment for match_network function
-    :param ind_lim:
-    :param cap_lim:
-    :param frequency:
-    :param source_impedance:
-    :param load_impedance:
-    :return:
+    Matching Function determines Network Type and then Calculates all possible networks
+    :param ind_lim: Minimal allowed Inductance
+    :param cap_lim: Minimal allowed Capacitance
+    :param frequency: Frequency at which the elements need to be matched
+    :param source_impedance: Source Impedance
+    :param load_impedance: Load Impedance
+    :return: Returns a Dictionary which holds all possible Networks
     """
     if source_impedance.real > load_impedance.real:
         if abs(load_impedance.imag) >= sqrt(load_impedance.real * (source_impedance.real - load_impedance.real)):
@@ -46,8 +46,8 @@ def match_network(source_impedance: complex, load_impedance: complex, frequency,
 def calculate_q(numerator: complex, denominator: complex):
     """
     Functions calculates the Q value which is used to calculate the two Impedance's in an L-Network
-    :param numerator:
-    :param denominator:
+    :param numerator:   Load or source Impedance based on L-Network Type
+    :param denominator: Load or source Impedance based on L-Network Type
     :return:
     """
     return sqrt(numerator.real / denominator.real - 1 + numerator.imag ** 2 / (numerator.real * denominator.real))
@@ -55,11 +55,11 @@ def calculate_q(numerator: complex, denominator: complex):
 
 def calculate_x1(nominator_impedance: complex, denominator_impedance: complex, q):
     """
-    TODO: Docstring for calculate_x1
-    :param nominator_impedance:
-    :param denominator_impedance:
-    :param q:
-    :return:
+    Calculates Parallel Impedance of the Matching Network
+    :param nominator_impedance: Source or Load Impedance based on L-Network Type
+    :param denominator_impedance: Source or Load Impedance based on L-Network Type
+    :param q: Q-Factor
+    :return: both possible values of x1
     """
     x1_p = ((nominator_impedance.imag + nominator_impedance.real * q) /
             (nominator_impedance.real / denominator_impedance.real - 1))
@@ -70,10 +70,10 @@ def calculate_x1(nominator_impedance: complex, denominator_impedance: complex, q
 
 def calculate_x2(impedance: complex, q):
     """
-    TODO: Docstring for calculate_x2
-    :param impedance:
-    :param q:
-    :return:
+    Calculate Series Component of the Network
+    :param impedance: Load or Source Impedance based on the
+    :param q: Q-Factor
+    :return: Both possible values of x2
     """
     x2_p = -(impedance.imag + impedance.real * q)
     x2_n = -(impedance.imag - impedance.real * q)
@@ -82,11 +82,11 @@ def calculate_x2(impedance: complex, q):
 
 def calculate_reversed(source: complex, load: complex, frequency):
     """
-    TODO: Docstring for calculate_reversed
-    :param frequency:
-    :param source:
-    :param load:
-    :return:
+    Calculates both possible networks for a reversed L-Section (series then parallel)
+    :param frequency: Frequency at which the elements need to be matched
+    :param source: Source Impedance
+    :param load: Load Impedance
+    :return: Dictionary which holds both the Impedance and Component Values
     """
     q = calculate_q(load, source)
     x1 = np.array(calculate_x1(load, source, q)).reshape((2, 1))
@@ -95,7 +95,6 @@ def calculate_reversed(source: complex, load: complex, frequency):
     lumped_elements = {
         "Impedance": solution
     }
-
     # Calculate Component Values
     values = []
     for x1, x2 in solution:
@@ -111,12 +110,11 @@ def calculate_reversed(source: complex, load: complex, frequency):
 
 def calculate_normal(source: complex, load: complex, frequency):
     """
-    TODO: Docstring for calculate_normal
-    :param frequency:
-    :return:
-    :param source:
-    :param load:
-    :return:
+    Function calculates both possible values for the normal (parallel then series) L-Section
+    :param source: Source Impedance
+    :param load: Load Impedance
+    :param frequency: Frequency at which the elements need to be matched
+    :return: Dictionary which holds both the Impedance and Component Values
     """
     q = calculate_q(source, load)
     x1 = np.array(calculate_x1(source, load, q)).reshape((2, 1))
@@ -125,7 +123,6 @@ def calculate_normal(source: complex, load: complex, frequency):
     lumped_elements = {
         "Impedance": solution
     }
-
     # Calculate Component Values
     values = []
     for x1, x2 in solution:
@@ -140,6 +137,13 @@ def calculate_normal(source: complex, load: complex, frequency):
 
 
 def calculate_special_case(source: complex, load: complex, frequency):
+    """
+    Function calculates the possible Network for a special Case where the real part stays the same
+    :param source: Source Impedance
+    :param load: Load Impedance
+    :param frequency: Frequency at which the elements need to be matched
+    :return: Dictionary which holds both the Impedance and Component Value
+    """
     x2 = -(load.imag + source.imag)
     lumped_elements = {
         "Impedance": x2
@@ -149,12 +153,18 @@ def calculate_special_case(source: complex, load: complex, frequency):
         xs[0] = f"{xs[0]}s"
     else:
         xs[0] = ""
-        xs[1] = "short"
+        xs[1] = "Short"
     lumped_elements.update({"Values": xs})
     return lumped_elements
 
 
 def calculate_component_value(frequency, impedance):
+    """
+    Calculates the Components Value.
+    :param frequency:
+    :param impedance: Negative Impedance means capacitor. Positive means inductance
+    :return: A list with three Elements [Component Type, Value, Unit with SI-Prefix
+    """
     if impedance > 0:
         value, exp = calculate_inductance(frequency, impedance)
         unit = get_prefix(exp) + "H"
@@ -169,10 +179,10 @@ def calculate_component_value(frequency, impedance):
 
 def calculate_capacitance(frequency, impedance):
     """
-    TODO: Docstring for calculate_capacitance
+    Calculate the Capacitance Value based on impedance and Frequency
     :param frequency:
-    :param impedance:
-    :return:
+    :param impedance: Negative Impedance
+    :return: Returns rounded Capacitance Value and the exponent
     """
     w = 2 * np.pi * frequency
     capacitance = (1 / (w * impedance)).real
@@ -183,10 +193,10 @@ def calculate_capacitance(frequency, impedance):
 
 def calculate_inductance(frequency, impedance):
     """
-    TODO: Docstring for calculate_inductance
+    Calculates Impedance based on Frequency and Impedance
     :param frequency:
-    :param impedance:
-    :return:
+    :param impedance: Positive Impedance
+    :return: Return rounded Impedance Value and it's exponent
     """
     w = 2 * np.pi * frequency
     inductance = (impedance / w).real
@@ -204,7 +214,14 @@ def get_exponent(value: float):
     return floor(log10(abs(value)))
 
 
-def reformat_value(value, exponent,):
+def reformat_value(value, exponent):
+    """
+    Function reformats the value based on its exponents. Rounds the value, so it's always three digits
+    867.553
+    :param value: Value which needs to be reformatted
+    :param exponent:
+    :return: Returns the Reformatted Value
+    """
     decimal_points = 2 - exponent % 3
     exp = exponent - (exponent % 3)
     if exponent > 0:
