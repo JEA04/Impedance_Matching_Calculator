@@ -30,7 +30,6 @@ class SmithChart(object):
         new_points = []
         for arg in args:
             new_points.append(arg)
-
         previous_point = None
         for index, point in enumerate(new_points):
             xy = self.impedance_to_gamma(point)
@@ -42,7 +41,6 @@ class SmithChart(object):
                 self.add_target_impedance_text(args[index])
                 self.draw_curve_between_points(previous_point, point)
             else:
-                # TODO: Interpolate between points
                 self.draw_curve_between_points(previous_point, point)
             previous_point = point
 
